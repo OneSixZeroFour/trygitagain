@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		
+		<div id="demo"></div>
+	</body>
+	<template id="app">
+			<a v-link="{path:'/index'}">index</a>
+			<a v-link="{name:'home',params:{id:1,name:'abc',age:19}}">home</a> <!--参数传递-->
+			<a v-link="{path:'/index/a'}">a</a>
+			<a v-link="{path:'/index/b'}">b</a> 	
+			<!--视图--> 
+			<router-view></router-view> 
+	</template>	
+	
+	<script src="js/vue.js"></script>
+	<script src="js/vue-router.js"></script>
+	<script src="js/vue-resource.min.js"></script>
+	<script type="text/javascript">
+	
+	//app下
+		var index = Vue.extend({
+			template:'<div>第一个路由</div><router-view></router-view>',		
+		})
+		var home = Vue.extend({
+			template:'<div>第 二个路由</div>',	
+			//获取url上参数:id
+			route:{
+				data:function(transition){
+					console.log(transition)
+					this.$http.get('test.php',{
+						params:{
+							name:transition.to.params.age,
+						}
+					}).then(function(data){
+						console.log(data)
+					})
+				}
+			}
+		})
+	//index下	
+		var a = Vue.extend({
+			template:'<p>index的a</p>'
+		})
+		var b = Vue.extend({
+			template:'<p>index的b</p>'
+		})
+		
+		
+		
+		
+		 // 最外层
+		var App = Vue.extend({		
+			template:'#app',				
+			replace:false, //写成模板时添加
+			data:function(){
+				return {
+					name:'wsscat'
+				}
+			}
+		})  
+		
+		
+	var router = new VueRouter()
+		// 切换组件
+		router.map({
+			//  #!/index
+			'/index':{
+				component:index,
+				//嵌套路由
+				subRoutes:{
+					'/a':{
+						component:a,
+					},
+					'/b':{
+						component:b,
+					}
+				}
+			},
+			//参数传递
+			'/home/:id/:age':{
+				name:'home',
+				component:home
+			}
+		})
+		//激活
+		router.start(App,'#demo')
+		//默认路由
+		router.redirect({
+			'*':'/index/a'   //没有*：有index
+		})
+	</script>
+	<style type="text/css">
+		.v-link-active{
+			color:red
+		}
+	</style>
+</html>
+
